@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Detection</title>
+
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        body {
+            background-color: #f4f4f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #container {
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <h2 class="mb-4">Phishing Detection</h2>
+
+        <!-- Form element for URL input and model selection -->
+        <form id="phishingForm" method="post" action="/predict" onsubmit="return checkPhishing()">
+            <div class="form-group">
+                <input type="text" class="form-control" id="urlInput" name="urlInput" placeholder="Enter URL">
+            </div>
+
+            <!-- Dropdown list for model selection -->
+            <div class="form-group">
+                <label for="modelSelect">Choose Model:</label>
+                <select class="form-control" id="modelSelect" name="modelSelect">
+                    <option value="LSTM">LSTM</option>
+                    <option value="biLSTM">biLSTM</option>
+                    <option value="SVM">SVM</option>
+                    <option value="Decision Tree">Decision Tree</option>
+                    <option value="mlp">Multi Layer Perceptron</option>
+                    <option value="rf">Random Forest</option>
+                    <!-- Add more options as needed -->
+                </select>
+            </div>
+
+            <!-- Button to submit the form -->
+            <button type="button" onclick="checkPhishing()" class="btn btn-primary btn-block mb-3">Check
+                Phishing</button>
+        </form>
+
+        <!-- Add an id to the result paragraph for easier access -->
+        <p id="resultParagraph">
+            {% if result %}
+            {{ result }}
+            {% endif %}
+        </p>
+
+        <!-- Add an id to the prediction paragraph for displaying the prediction value -->
+        <p id="predictionParagraph">
+            {% if prediction %}
+            Prediction: {{ prediction }}
+            {% endif %}
+        </p>
+    </div>
+
+
+    <!-- Bootstrap JS and Popper.js CDN -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function checkPhishing() {
+            // Get the form data
+            var formData = {
+                url: document.getElementById('urlInput').value,
+                selected_model: document.getElementById('modelSelect').value // Updated to 'selected_model'
+            };
+    
+            // Send a POST request to the server with the correct Content-Type
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', // Set the content type to JSON
+                },
+                body: JSON.stringify(formData),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Update the result and prediction paragraphs
+                    if (data.error) {
+                        console.error(data.error);
+                    } else {
+                        document.getElementById('resultParagraph').innerHTML = data.result;
+                        document.getElementById('predictionParagraph').innerHTML = 'Prediction: ' + data.prediction;
+                    }
+                })
+                .catch(error => console.error('Error:', error)); // Handle any fetch errors
+    
+            return false; // Prevent the default form submission
+        }
+    </script>    
+
+</body>
+
+</html>
